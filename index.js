@@ -2,9 +2,12 @@ const express = require('express');
 const fs = require('fs');
 
 const DATA_PATH = `${__dirname}/data`;
+const FILE_NAME = `${DATA_PATH}/username.json`;
+const DATE_SPLITTER = '/';
 
 const PORT = 9000;
 
+let timeRecords = {};
 
 const app = express();
 app.use(express.urlencoded());
@@ -69,6 +72,48 @@ if (!checkPathExist(DATA_PATH)) {
     fs.mkdirSync(DATA_PATH);
 }
 
+if (!checkPathExist(FILE_NAME)) {
+    fs.writeFileSync(FILE_NAME, JSON.stringify({}));
+}
+
+let fileStreamData = fs.readFileSync(FILE_NAME);
+timeRecords = JSON.parse(fileStreamData);
+
+
+let createTimeRecordStructure = (key, data) => {
+    let [date, month, year] = key;
+    if (timeRecords[year]) {
+        if (timeRecords[year][month]) {
+            let monthData = timeRecords[year][month];
+            if (timeRecords[year][month][date]) {
+                timeRecords[year][month] = { ...monthData, ...{ [date]: data } }
+            } else {
+                timeRecords[year][month][date] = data;
+            }
+        } else {
+            timeRecords[year][month] = {
+                [date]: data
+            }
+        }
+    } else {
+        timeRecords[year] = {
+            [month]: {
+                [date]: data
+            }
+        }
+    }
+}
+
+let getTimeRecord = ({ year, month, date }) => {
+    if (month) {
+        if (date) {
+            return timeRecords[year][month][date] || {};
+        }
+        return timeRecords[year][month] || {};
+    }
+    return timeRecords[year];
+}
+
 app.get('/', (req, res) => {
     res.send('Hello World!!!');
 })
@@ -79,49 +124,21 @@ app.get('/timerecords', (req, res) => {
     res.send('Success')
 })
 
-app.get('/timerecords/:year/:month/:date', (req, res) => {
-    let { year, month, date } = req.params;
-    if (!isValidYear(year) || !isValidMonth(month) || !isValidDate(date)) {
-        res.send('Failed');
-        return;
-    }
-
-    let filePath = `${DATA_PATH}/${year}/${month}/${date}.json`;
-    if (!checkPathExist(filePath)) {
-        fs.readFile(filePath, (err, data) => {
-            if (err) {
-                console.log('Read failed');
-                res.send('Read/Write Failed');
-                return
-            }
-            let parsedData = JSON.parse(data);
-            console.log(parsedData);
-            res.send(parsedData);
-        });
-        return;
-    }
-    res.send('Read/Write failed --path doesnt exist');
+app.get('/timerecords/:year/:month?/:date?', (req, res) => {
+    let timerecord = getTimeRecord(req.params)
+    res.send(timerecord);
 })
 
-app.post('/timerecords/:year/:month/:date', (req, res) => {
-    let { year, month, date } = req.params;
-    if (!isValidYear(year) || !isValidMonth(month) || !isValidDate(date)) {
-        res.send('Failed');
-        return;
-    }
-
-    let yearDir = `${DATA_PATH}/${year}`;
-    let monthDir = `${year}/${month}`;
-    let filePath = `${year}/${month}/${date}.json`;
-    let bodyData = req.body.data;
-    if (!checkPathExist(yearDir)) {
-        createDir(monthDir);
-        createFile(filePath, bodyData);
-    } else {
-        writeData(filePath, bodyData);
+app.post('/timerecords', (req, res) => {
+    let bodyData = JSON.parse(req.body.data);
+    for (let key in bodyData) {
+        let normalisedDate = key.split(DATE_SPLITTER);
+        createTimeRecordStructure(normalisedDate, bodyData[key]);
+        fs.writeFile(FILE_NAME, JSON.stringify(timeRecords), (err) => {
+            res.send("Write Sucess")
+        })
     }
     console.log(req.params)
-    res.send(bodyData)
 })
 
 app.listen(PORT, () => {
