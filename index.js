@@ -105,9 +105,10 @@ let createTimeRecordStructure = (key, data) => {
 }
 
 let getTimeRecord = ({ year, month, date }) => {
+    let yearData = timeRecords[year];
     if (month) {
         if (date) {
-            return timeRecords[year][month][date] || {};
+            return yearData[month] ? yearData[month][date] ? yearData[month][date] : {} : {};
         }
         return timeRecords[year][month] || {};
     }
@@ -130,6 +131,7 @@ app.get('/timerecords/:year/:month?/:date?', (req, res) => {
 })
 
 app.post('/timerecords', (req, res) => {
+    console.log(req.body);
     let bodyData = JSON.parse(req.body.data);
     for (let key in bodyData) {
         let normalisedDate = key.split(DATE_SPLITTER);
