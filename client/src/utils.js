@@ -18,3 +18,8 @@ export function doFetch(url, actionType, dispatch, options) {
 }
 
 export let months = [, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+export let constants = {
+    recordIn: 'In',
+    recordOut: 'Out'
+}

@@ -106,6 +106,9 @@ let createTimeRecordStructure = (key, data) => {
 
 let getTimeRecord = ({ year, month, date }) => {
     let yearData = timeRecords[year];
+    if (!yearData) {
+        return {};
+    }
     if (month) {
         if (date) {
             return yearData[month] ? yearData[month][date] ? yearData[month][date] : {} : {};

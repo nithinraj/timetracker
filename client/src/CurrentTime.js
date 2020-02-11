@@ -5,6 +5,11 @@ import { connect } from 'react-redux'
 import { doFetch as fetch } from './utils';
 import Input from './Input';
 
+let gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)'
+}
+
 function CurrentTime(props) {
     let { getCurrent, current, setCurrent } = props;
     let currentYear = moment().year();
@@ -57,10 +62,10 @@ function CurrentTime(props) {
         console.log(options)
     }
     return (
-        <div>
-            In: {current.in ? moment(current.in).format('hh:mm:ss') : <Input onSubmit={timeInSubmit} buttonName={'Record In'} />} (hh:mm:ss)
-            <br />
-            Out: {current.out ? moment(current.out).format('hh:mm:ss') : <Input onSubmit={timeOutSubmit} buttonName={'Record Out'} />} (hh:mm:ss)
+        <div style={gridStyle}>
+            <div>In: {current.in ? moment(current.in).format('hh:mm:ss') : <Input onSubmit={timeInSubmit} buttonName={'Record In'} />} (hh:mm:ss) </div>
+
+            <div>Out: {current.out ? moment(current.out).format('hh:mm:ss') : <Input onSubmit={timeOutSubmit} buttonName={'Record Out'} />} (hh:mm:ss)</div>
         </div>
     )
 }

@@ -13,7 +13,7 @@ function History(props) {
     console.log('history --> ', all)
 
     let history = Object.keys(all).map((item) => {
-        return <MonthData key={months[item]} data={all[item]} month={months[item]} />
+        return <MonthData key={months[item]} data={all[item]} month={months[item]} monthId={item} />
     })
 
     return (
